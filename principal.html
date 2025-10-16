@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundConnect - Tu Red Social Musical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-music"></i>
+                <h1>SoundConnect</h1>
+            </div>
+            
+            <div class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <nav id="main-nav">
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                    <li><a href="#"><i class="fas fa-compass"></i> Explorar</a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> Comunidad</a></li>
+                    <li><a href="#"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                    <li><a href="#"><i class="fas fa-envelope"></i> Mensajes</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-actions">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar música, artistas...">
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">U</div>
+                    <span>Usuario</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-content">
+        <!-- Feed Central -->
+        <div class="feed">
+            <!-- Crear Publicación -->
+            <div class="create-post">
+                <div class="post-header">
+                    <div class="post-avatar">U</div>
+                    <input type="text" class="post-input" placeholder="¿Qué estás escuchando?">
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn">
+                        <i class="fas fa-image"></i> Foto
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-music"></i> Música
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-map-marker-alt"></i> Ubicación
+                    </button>
+                    <button class="post-btn">Publicar</button>
+                </div>
+            </div>
+            
+            <!-- Publicaciones -->
+            <div class="post">
+                <div class="post-user">
+                    <div class="post-avatar">MJ</div>
+                    <div class="post-user-info">
+                        <div class="post-username">MariaJazz</div>
+                        <div class="post-time">Hace 2 horas</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    Acabo de descubrir esta increíble canción de jazz. ¡Es perfecta para relajarse después de un largo día! 🎷✨
+                </div>
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Jazz concert" class="post-image">
+                <div class="post-stats">
+                    <span>125 me gusta</span>
+                    <span>23 comentarios</span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-btn">
+                        <i class="far fa-heart"></i> Me gusta
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-comment"></i> Comentar
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-share-square"></i> Compartir
+                    </button>
+                </div>
+            </div>
+            
+            <div class="post">
+                <div class="post-user">
+                    <div class="post-avatar">RP</div>
+                    <div class="post-user-info">
+                        <div class="post-username">RockPro</div>
+                        <div class="post-time">Hace 5 horas</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ¡Nuevo álbum de mi banda favorita! ¿Ya lo escucharon? 🤘 #Rock #NuevoAlbum
+                </div>
+                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Rock concert" class="post-image">
+                <div class="post-stats">
+                    <span>89 me gusta</span>
+                    <span>15 comentarios</span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-btn">
+                        <i class="far fa-heart"></i> Me gusta
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-comment"></i> Comentar
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-share-square"></i> Compartir
+                    </button>
+                </div>
+            </div>
+            
+            <div class="post">
+                <div class="post-user">
+                    <div class="post-avatar">ED</div>
+                    <div class="post-user-info">
+                        <div class="post-username">ElectroDance</div>
+                        <div class="post-time">Ayer a las 18:30</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ¡Increíble festival electrónico el fin de semana! Aquí algunas fotos del evento. ¿Alguien más fue? 🎧⚡
+                </div>
+                <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Electronic music festival" class="post-image">
+                <div class="post-stats">
+                    <span>203 me gusta</span>
+                    <span>42 comentarios</span>
+                </div>
+                <div class="post-interactions">
+                    <button class="interaction-btn">
+                        <i class="far fa-heart"></i> Me gusta
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-comment"></i> Comentar
+                    </button>
+                    <button class="interaction-btn">
+                        <i class="far fa-share-square"></i> Compartir
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel Lateral -->
+        <div class="sidebar">
+            <h2><i class="fas fa-user-friends"></i> Amigos</h2>
+            <div class="friend-item">
+                <div class="friend-avatar">JF</div>
+                <div class="friend-info">
+                    <div class="friend-name">JazzFan</div>
+                    <div class="friend-status online">En línea - Escuchando jazz</div>
+                </div>
+            </div>
+            <div class="friend-item">
+                <div class="friend-avatar">RB</div>
+                <div class="friend-info">
+                    <div class="friend-name">RockBeats</div>
+                    <div class="friend-status">Hace 30 min</div>
+                </div>
+            </div>
+            <div class="friend-item">
+                <div class="friend-avatar">PS</div>
+                <div class="friend-info">
+                    <div class="friend-name">PopStar</div>
+                    <div class="friend-status online">En línea</div>
+                </div>
+            </div>
+            <div class="friend-item">
+                <div class="friend-avatar">CS</div>
+                <div class="friend-info">
+                    <div class="friend-name">ClassicalSoul</div>
+                    <div class="friend-status">Hace 2 horas</div>
+                </div>
+            </div>
+            
+            <h2 style="margin-top: 30px;"><i class="fas fa-user-plus"></i> Sugerencias</h2>
+            <div class="friend-item">
+                <div class="friend-avatar">EM</div>
+                <div class="friend-info">
+                    <div class="friend-name">ElectroMix</div>
+                    <div class="friend-status">15 amigos en común</div>
+                </div>
+                <button class="action-btn" style="padding: 5px 10px; font-size: 0.8rem;">Seguir</button>
+            </div>
+            <div class="friend-item">
+                <div class="friend-avatar">IM</div>
+                <div class="friend-info">
+                    <div class="friend-name">IndieMusic</div>
+                    <div class="friend-status">8 amigos en común</div>
+                </div>
+                <button class="action-btn" style="padding: 5px 10px; font-size: 0.8rem;">Seguir</button>
+            </div>
+            
+            <h2 style="margin-top: 30px;"><i class="fas fa-calendar-alt"></i> Próximos Eventos</h2>
+            <div class="event-item">
+                <i class="fas fa-music" style="color: #ff8a00;"></i>
+                <div class="friend-info">
+                    <div class="friend-name">Festival de Jazz Internacional</div>
+                    <div class="event-date">15 de Noviembre - Parque Central</div>
+                </div>
+            </div>
+            <div class="event-item">
+                <i class="fas fa-guitar" style="color: #ff8a00;"></i>
+                <div class="friend-info">
+                    <div class="friend-name">Noche de Rock Alternativo</div>
+                    <div class="event-date">22 de Noviembre - Sala The Rock</div>
+                </div>
+            </div>
+            <div class="event-item">
+                <i class="fas fa-sliders-h" style="color: #ff8a00;"></i>
+                <div class="friend-info">
+                    <div class="friend-name">Fiesta Electrónica Neon</div>
+                    <div class="event-date">30 de Noviembre - Club Electron</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>SoundConnect &copy; 2023 - Conectando a través de la música</p>
+    </footer>
+    
+    <script>
+        function createMusicNotes() {
+            const notes = ['♩', '♪', '♫', '♬', '🎵', '🎶'];
+            const container = document.body;   
+            for (let i = 0; i < 15; i++) {
+                const note = document.createElement('div');
+                note.className = 'music-note';
+                note.textContent = notes[Math.floor(Math.random() * notes.length)];
+                note.style.left = Math.random() * 100 + 'vw';
+                note.style.animationDelay = Math.random() * 15 + 's';
+                note.style.fontSize = (Math.random() * 20 + 16) + 'px';
+                container.appendChild(note);
+            }
+        }
+        
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Toggle del menú móvil
+        document.querySelector('.mobile-menu').addEventListener('click', function() {
+            document.getElementById('main-nav').classList.toggle('active');
+        });
+        
+        // Interacción con botones de me gusta
+        document.querySelectorAll('.interaction-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.querySelector('.fa-heart')) {
+                    const icon = this.querySelector('.fa-heart');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.style.color = '#ff8a00';
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.style.color = '#fff';
+                    }
+                }
+            });
+        });
+        
+        window.addEventListener('load', function() {
+            createMusicNotes();
+            createParticles();
+        });
+    </script>
+</body>
+</html>
