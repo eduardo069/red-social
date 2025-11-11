@@ -196,40 +196,47 @@ class User {
         return $stmt->fetchAll();
     }
     
-    /**
+/**
      * Obtener estadísticas del usuario
      */
     public function getStats($userId) {
-        // Total de publicaciones
-        $query1 = "SELECT COUNT(*) as total_posts FROM publicaciones WHERE usuario_id = :id";
-        $stmt1 = $this->conn->prepare($query1);
-        $stmt1->bindParam(':id', $userId);
-        $stmt1->execute();
-        $posts = $stmt1->fetch()['total_posts'];
-        
-        // Total de amigos
-        $query2 = "SELECT COUNT(*) as total_friends FROM amistades 
-                   WHERE (usuario_id = :id OR amigo_id = :id) 
-                   AND estado = 'aceptada'";
-        $stmt2 = $this->conn->prepare($query2);
-        $stmt2->bindParam(':id', $userId);
-        $stmt2->execute();
-        $friends = $stmt2->fetch()['total_friends'];
-        
-        // Total de likes recibidos
-        $query3 = "SELECT COUNT(*) as total_likes FROM me_gusta mg
-                   INNER JOIN publicaciones p ON mg.publicacion_id = p.id
-                   WHERE p.usuario_id = :id";
-        $stmt3 = $this->conn->prepare($query3);
-        $stmt3->bindParam(':id', $userId);
-        $stmt3->execute();
-        $likes = $stmt3->fetch()['total_likes'];
-        
-        return [
-            'total_posts' => $posts,
-            'total_friends' => $friends,
-            'total_likes' => $likes
+        $stats = [
+            'total_posts' => 0,
+            'total_friends' => 0,
+            'total_likes' => 0
         ];
+        
+        try {
+            // Total de publicaciones
+            $query1 = "SELECT COUNT(*) as total_posts FROM publicaciones WHERE usuario_id = ?";
+            $stmt1 = $this->conn->prepare($query1);
+            $stmt1->execute([$userId]);
+            $result1 = $stmt1->fetch();
+            $stats['total_posts'] = intval($result1['total_posts']);
+            
+            // Total de amigos
+            $query2 = "SELECT COUNT(*) as total_friends FROM amistades 
+                       WHERE (usuario_id = ? OR amigo_id = ?) 
+                       AND estado = 'aceptada'";
+            $stmt2 = $this->conn->prepare($query2);
+            $stmt2->execute([$userId, $userId]);
+            $result2 = $stmt2->fetch();
+            $stats['total_friends'] = intval($result2['total_friends']);
+            
+            // Total de likes recibidos
+            $query3 = "SELECT COUNT(*) as total_likes FROM me_gusta mg
+                       INNER JOIN publicaciones p ON mg.publicacion_id = p.id
+                       WHERE p.usuario_id = ?";
+            $stmt3 = $this->conn->prepare($query3);
+            $stmt3->execute([$userId]);
+            $result3 = $stmt3->fetch();
+            $stats['total_likes'] = intval($result3['total_likes']);
+            
+        } catch (PDOException $e) {
+            error_log("Error en getStats: " . $e->getMessage());
+        }
+        
+        return $stats;
     }
     
     /**

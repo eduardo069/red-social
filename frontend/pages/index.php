@@ -210,7 +210,7 @@ if ($usuario_autenticado) {
             <nav id="main-nav">
                 <ul>
                     <li><a href="index.php"><i class="fas fa-home"></i> Inicio</a></li>
-                    <li><a href="#"><i class="fas fa-compass"></i> Explorar</a></li>
+                    <li><a href="explorar.php"><i class="fas fa-compass"></i> Explorar</a></li>
                     <li><a href="#"><i class="fas fa-users"></i> Comunidad</a></li>
                     <li><a href="#"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
                     <li><a href="#"><i class="fas fa-envelope"></i> Mensajes</a></li>
@@ -389,6 +389,7 @@ if ($usuario_autenticado) {
     
     <script src="../assets/js/main.js"></script>
     <script src="../assets/js/posts.js"></script>
+    <script src="../assets/js/likes.js"></script>
     <script src="../assets/js/auth.js"></script>
 </body>
 </html>
