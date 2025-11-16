@@ -94,22 +94,6 @@ $currentUserId = $sessionCheck['user']['user_id'];
             background: rgba(255,255,255,0.08);
         }
         
-        .friend-card-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: white;
-            position: relative;
-            cursor: pointer;
-        }
-        
         .friend-card h3 {
             margin: 0 0 5px;
             font-size: 1.1rem;
@@ -209,13 +193,13 @@ $currentUserId = $sessionCheck['user']['user_id'];
             </div>
             
             <div class="friends-tabs">
-                <div class="friends-tab active" data-tab="friends" onclick="switchTab('friends')">
+                <div class="friends-tab active" data-tab="friends" onclick="window.switchTab('friends')">
                     <i class="fas fa-users"></i> Mis Amigos (<span id="friends-count">0</span>)
                 </div>
-                <div class="friends-tab" data-tab="requests" onclick="switchTab('requests')">
+                <div class="friends-tab" data-tab="requests" onclick="window.switchTab('requests')">
                     <i class="fas fa-user-clock"></i> Solicitudes Recibidas (<span id="requests-count">0</span>)
                 </div>
-                <div class="friends-tab" data-tab="sent" onclick="switchTab('sent')">
+                <div class="friends-tab" data-tab="sent" onclick="window.switchTab('sent')">
                     <i class="fas fa-paper-plane"></i> Solicitudes Enviadas (<span id="sent-count">0</span>)
                 </div>
             </div>
@@ -259,180 +243,222 @@ $currentUserId = $sessionCheck['user']['user_id'];
     <script src="../assets/js/main.js"></script>
     <script src="../assets/js/friends.js"></script>
     <script>
-        const API_BASE_URL = window.SoundConnect.API_BASE_URL;
-        const Utils = window.SoundConnect.Utils;
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFriends();
-            loadPendingRequests();
-            loadSentRequests();
-        });
-        
-        function switchTab(tab) {
-            // Actualizar tabs
-            document.querySelectorAll('.friends-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        (function() {
+            console.log('🔍 DEBUG: Iniciando amigos.php...');
             
-            // Mostrar contenido
-            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-            document.getElementById(`${tab}-tab`).style.display = 'block';
-        }
-        
-        async function loadFriends() {
-            const friendsList = document.getElementById('friends-list');
-            friendsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
+            // Usar configuración global
+            const API_BASE_URL = window.SoundConnect?.API_BASE_URL || 'http://localhost/red-social/backend/api';
+            const Utils = window.SoundConnect?.Utils || {
+                fetchAPI: async function(url, options = {}) {
+                    const response = await fetch(url, {
+                        ...options,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        }
+                    });
+                    return await response.json();
+                },
+                escapeHtml: function(text) {
+                    const map = {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#039;'
+                    };
+                    return text.replace(/[&<>"']/g, m => map[m]);
+                }
+            };
             
-            const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-friends`);
+            console.log('📡 API_BASE_URL:', API_BASE_URL);
             
-            if (result.success && result.data.length > 0) {
-                document.getElementById('friends-count').textContent = result.data.length;
-                friendsList.innerHTML = '';
+            // Funciones globales
+            window.switchTab = function(tab) {
+                document.querySelectorAll('.friends-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                document.getElementById(`${tab}-tab`).style.display = 'block';
+            };
+            
+            async function loadFriends() {
+                const friendsList = document.getElementById('friends-list');
+                friendsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
                 
-                result.data.forEach(friend => {
-                    const card = createFriendCard(friend, 'friend');
-                    friendsList.appendChild(card);
+                try {
+                    const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-friends`);
+                    
+                    if (result.success && result.data && result.data.length > 0) {
+                        document.getElementById('friends-count').textContent = result.data.length;
+                        friendsList.innerHTML = '';
+                        
+                        result.data.forEach(friend => {
+                            friendsList.appendChild(createFriendCard(friend, 'friend'));
+                        });
+                    } else {
+                        document.getElementById('friends-count').textContent = '0';
+                        friendsList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-user-friends"></i>
+                                <p>Aún no tienes amigos</p>
+                                <p style="margin-top: 10px;"><a href="explorar.php" style="color: #ff8a00;">Explorar usuarios</a></p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('❌ Error cargando amigos:', error);
+                }
+            }
+            
+            async function loadPendingRequests() {
+                const requestsList = document.getElementById('requests-list');
+                requestsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
+                
+                console.log('🔄 Cargando solicitudes...');
+                
+                try {
+                    const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-pending-requests`);
+                    
+                    console.log('📥 Respuesta:', result);
+                    
+                    if (result.success && result.data && result.data.length > 0) {
+                        console.log('✅ Solicitudes encontradas:', result.data.length);
+                        document.getElementById('requests-count').textContent = result.data.length;
+                        requestsList.innerHTML = '';
+                        
+                        result.data.forEach(request => {
+                            requestsList.appendChild(createFriendCard(request, 'request'));
+                        });
+                    } else {
+                        console.log('ℹ️ Sin solicitudes');
+                        document.getElementById('requests-count').textContent = '0';
+                        requestsList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-user-clock"></i>
+                                <p>No tienes solicitudes pendientes</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    requestsList.innerHTML = `<div class="empty-state"><p>Error: ${error.message}</p></div>`;
+                }
+            }
+            
+            async function loadSentRequests() {
+                const sentList = document.getElementById('sent-list');
+                sentList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
+                
+                try {
+                    const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-sent-requests`);
+                    
+                    if (result.success && result.data && result.data.length > 0) {
+                        document.getElementById('sent-count').textContent = result.data.length;
+                        sentList.innerHTML = '';
+                        
+                        result.data.forEach(request => {
+                            sentList.appendChild(createFriendCard(request, 'sent'));
+                        });
+                    } else {
+                        document.getElementById('sent-count').textContent = '0';
+                        sentList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-paper-plane"></i>
+                                <p>No has enviado solicitudes</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('❌ Error cargando enviadas:', error);
+                }
+            }
+            
+            function createFriendCard(data, type) {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                
+                const avatarContent = data.foto_perfil ? 
+                    `<img src="../../backend/${data.foto_perfil}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+                    data.nombre[0];
+                
+                const onlineStatus = data.estado === 'online' ? '<span class="status-online"></span>' : '';
+                
+                let actions = '';
+                if (type === 'friend') {
+                    actions = `
+                        <button class="friend-btn btn-view" onclick="window.viewProfile(${data.user_id})">
+                            <i class="fas fa-eye"></i> Ver perfil
+                        </button>
+                        <button class="friend-btn btn-message" onclick="window.sendMessage(${data.user_id})">
+                            <i class="fas fa-envelope"></i> Mensaje
+                        </button>
+                    `;
+                } else if (type === 'request') {
+                    actions = `
+                        <button class="friend-btn btn-accept" onclick="window.acceptRequest(${data.request_id}, ${data.user_id})">
+                            <i class="fas fa-check"></i> Aceptar
+                        </button>
+                        <button class="friend-btn btn-reject" onclick="window.rejectRequest(${data.request_id}, ${data.user_id})">
+                            <i class="fas fa-times"></i> Rechazar
+                        </button>
+                    `;
+                } else if (type === 'sent') {
+                    actions = `
+                        <button class="friend-btn btn-view" onclick="window.viewProfile(${data.user_id})">
+                            <i class="fas fa-eye"></i> Ver perfil
+                        </button>
+                        <button class="friend-btn btn-reject" onclick="window.cancelRequest(${data.request_id}, ${data.user_id})">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="friend-card-avatar" onclick="window.viewProfile(${data.user_id})">
+                        ${avatarContent}
+                        ${onlineStatus}
+                    </div>
+                    <h3 onclick="window.viewProfile(${data.user_id})">${Utils.escapeHtml(data.nombre)}</h3>
+                    <div class="username">@${Utils.escapeHtml(data.usuario)}</div>
+                    ${data.genero_musical_favorito ? `<div style="color: #ff8a00; margin-bottom: 10px;"><i class="fas fa-music"></i> ${Utils.escapeHtml(data.genero_musical_favorito)}</div>` : ''}
+                    <div class="friend-card-actions">${actions}</div>
+                `;
+                
+                return card;
+            }
+            
+            window.viewProfile = (userId) => window.location.href = `perfil.php?user_id=${userId}`;
+            window.sendMessage = (userId) => window.location.href = `mensajes.php?user_id=${userId}`;
+            
+            window.acceptRequest = async (requestId, userId) => {
+                await window.FriendshipSystem.acceptRequest(requestId, userId);
+                loadFriends();
+                loadPendingRequests();
+            };
+            
+            window.rejectRequest = async (requestId, userId) => {
+                await window.FriendshipSystem.rejectRequest(requestId, userId);
+                loadPendingRequests();
+            };
+            
+            window.cancelRequest = async (requestId, userId) => {
+                await window.FriendshipSystem.cancelRequest(requestId, userId);
+                loadSentRequests();
+            };
+            
+            // Inicializar cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    loadFriends();
+                    loadPendingRequests();
+                    loadSentRequests();
                 });
             } else {
-                friendsList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user-friends"></i>
-                        <p>Aún no tienes amigos</p>
-                        <p style="margin-top: 10px;"><a href="explorar.php" style="color: #ff8a00;">Explorar usuarios</a></p>
-                    </div>
-                `;
+                loadFriends();
+                loadPendingRequests();
+                loadSentRequests();
             }
-        }
-        
-        async function loadPendingRequests() {
-            const requestsList = document.getElementById('requests-list');
-            requestsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
-            
-            const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-pending-requests`);
-            
-            if (result.success && result.data.length > 0) {
-                document.getElementById('requests-count').textContent = result.data.length;
-                requestsList.innerHTML = '';
-                
-                result.data.forEach(request => {
-                    const card = createFriendCard(request, 'request');
-                    requestsList.appendChild(card);
-                });
-            } else {
-                document.getElementById('requests-count').textContent = '0';
-                requestsList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user-clock"></i>
-                        <p>No tienes solicitudes pendientes</p>
-                    </div>
-                `;
-            }
-        }
-        
-        async function loadSentRequests() {
-            const sentList = document.getElementById('sent-list');
-            sentList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>';
-            
-            const result = await Utils.fetchAPI(`${API_BASE_URL}/users.php?action=get-sent-requests`);
-            
-            if (result.success && result.data.length > 0) {
-                document.getElementById('sent-count').textContent = result.data.length;
-                sentList.innerHTML = '';
-                
-                result.data.forEach(request => {
-                    const card = createFriendCard(request, 'sent');
-                    sentList.appendChild(card);
-                });
-            } else {
-                document.getElementById('sent-count').textContent = '0';
-                sentList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-paper-plane"></i>
-                        <p>No has enviado solicitudes</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function createFriendCard(data, type) {
-            const card = document.createElement('div');
-            card.className = 'friend-card';
-            
-            const avatarContent = data.foto_perfil ? 
-                `<img src="../../backend/${data.foto_perfil}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
-                data.nombre[0];
-            
-            const onlineStatus = data.estado === 'online' ? '<span class="status-online"></span>' : '';
-            
-            let actions = '';
-            
-            if (type === 'friend') {
-                actions = `
-                    <button class="friend-btn btn-view" onclick="viewProfile(${data.user_id})">
-                        <i class="fas fa-eye"></i> Ver perfil
-                    </button>
-                    <button class="friend-btn btn-message" onclick="sendMessage(${data.user_id})">
-                        <i class="fas fa-envelope"></i> Mensaje
-                    </button>
-                `;
-            } else if (type === 'request') {
-                actions = `
-                    <button class="friend-btn btn-accept" onclick="acceptRequest(${data.request_id}, ${data.user_id})">
-                        <i class="fas fa-check"></i> Aceptar
-                    </button>
-                    <button class="friend-btn btn-reject" onclick="rejectRequest(${data.request_id}, ${data.user_id})">
-                        <i class="fas fa-times"></i> Rechazar
-                    </button>
-                `;
-            } else if (type === 'sent') {
-                actions = `
-                    <button class="friend-btn btn-view" onclick="viewProfile(${data.user_id})">
-                        <i class="fas fa-eye"></i> Ver perfil
-                    </button>
-                    <button class="friend-btn btn-reject" onclick="cancelRequest(${data.request_id}, ${data.user_id})">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                `;
-            }
-            
-            card.innerHTML = `
-                <div class="friend-card-avatar" onclick="viewProfile(${data.user_id})">
-                    ${avatarContent}
-                    ${onlineStatus}
-                </div>
-                <h3 onclick="viewProfile(${data.user_id})">${Utils.escapeHtml(data.nombre)}</h3>
-                <div class="username">@${Utils.escapeHtml(data.usuario)}</div>
-                ${data.genero_musical_favorito ? `<div style="color: #ff8a00; margin-bottom: 10px;"><i class="fas fa-music"></i> ${Utils.escapeHtml(data.genero_musical_favorito)}</div>` : ''}
-                <div class="friend-card-actions">
-                    ${actions}
-                </div>
-            `;
-            
-            return card;
-        }
-        
-        function viewProfile(userId) {
-            window.location.href = `perfil.php?user_id=${userId}`;
-        }
-        
-        function sendMessage(userId) {
-            window.location.href = `mensajes.php?user_id=${userId}`;
-        }
-        
-        async function acceptRequest(requestId, userId) {
-            await window.FriendshipSystem.acceptRequest(requestId, userId);
-            loadFriends();
-            loadPendingRequests();
-        }
-        
-        async function rejectRequest(requestId, userId) {
-            await window.FriendshipSystem.rejectRequest(requestId, userId);
-            loadPendingRequests();
-        }
-        
-        async function cancelRequest(requestId, userId) {
-            await window.FriendshipSystem.cancelRequest(requestId, userId);
-            loadSentRequests();
-        }
+        })();
     </script>
 </body>
 </html>

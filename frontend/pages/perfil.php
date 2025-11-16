@@ -1,6 +1,7 @@
 <?php
 /**
  * perfil.php - Página de perfil de usuario
+ * CON SISTEMA DE AVATARES INTEGRADO
  */
 
 session_start();
@@ -72,11 +73,19 @@ if (!$isOwnProfile) {
             margin-bottom: 30px;
         }
         
+        /* NUEVO: Contenedor del avatar con botón */
+        .profile-avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            display: inline-block;
+        }
+        
         .profile-avatar {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            margin: 0 auto 20px;
             border: 5px solid white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             background: rgba(255,255,255,0.1);
@@ -86,6 +95,44 @@ if (!$isOwnProfile) {
             font-size: 3rem;
             font-weight: bold;
             color: white;
+            overflow: hidden;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* NUEVO: Botón de cambiar avatar */
+        .change-avatar-btn {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            opacity: 0;
+            white-space: nowrap;
+        }
+        
+        .profile-avatar-container:hover .change-avatar-btn {
+            opacity: 1;
+        }
+        
+        .change-avatar-btn:hover {
+            background: #ff8a00;
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 138, 0, 0.4);
         }
         
         .profile-info h1 {
@@ -192,12 +239,21 @@ if (!$isOwnProfile) {
         <div class="profile-container">
             <!-- Header del perfil -->
             <div class="profile-header">
-                <div class="profile-avatar">
-                    <?php if (!empty($profileUser['foto_perfil'])): ?>
-                        <img src="../../backend/<?php echo htmlspecialchars($profileUser['foto_perfil']); ?>" 
-                             alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                    <?php else: ?>
-                        <?php echo substr($profileUser['nombre'], 0, 1); ?>
+                <!-- Avatar con botón de cambio (solo si es tu perfil) -->
+                <div class="profile-avatar-container">
+                    <div class="profile-avatar">
+                        <?php if (!empty($profileUser['foto_perfil'])): ?>
+                            <img src="../../backend/<?php echo htmlspecialchars($profileUser['foto_perfil']); ?>" 
+                                 alt="Avatar">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($profileUser['nombre'], 0, 1)); ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <?php if ($isOwnProfile): ?>
+                        <button class="change-avatar-btn" data-open-avatar-modal>
+                            <i class="fas fa-camera"></i> Cambiar foto
+                        </button>
                     <?php endif; ?>
                 </div>
                 
@@ -357,8 +413,11 @@ if (!$isOwnProfile) {
         <p>SoundConnect &copy; 2025 - Conectando a través de la música</p>
     </footer>
     
+    <!-- SCRIPTS -->
     <script src="../assets/js/main.js"></script>
     <script src="../assets/js/posts.js"></script>
+    <script src="../assets/js/avatar-selector.js"></script>
+    
     <script>
         // Tabs del perfil
         document.querySelectorAll('.profile-tab').forEach(tab => {
@@ -381,37 +440,45 @@ if (!$isOwnProfile) {
         
         // Enviar solicitud de amistad
         async function sendFriendRequest(friendId) {
-            const result = await window.SoundConnect.Utils.fetchAPI(
-                `${window.SoundConnect.API_BASE_URL}/users.php?action=send-friend-request`,
-                {
+            try {
+                const response = await fetch('/red-social/backend/api/users.php?action=send-friend-request', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ friend_id: friendId })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Solicitud enviada');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert(result.message);
                 }
-            );
-            
-            if (result.success) {
-                window.SoundConnect.Utils.showNotification('Solicitud enviada', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                window.SoundConnect.Utils.showNotification(result.message, 'error');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
             }
         }
         
         // Aceptar solicitud de amistad
         async function acceptFriendRequest(requestId) {
-            const result = await window.SoundConnect.Utils.fetchAPI(
-                `${window.SoundConnect.API_BASE_URL}/users.php?action=accept-friend-request`,
-                {
+            try {
+                const response = await fetch('/red-social/backend/api/users.php?action=accept-friend-request', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ request_id: requestId })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Solicitud aceptada');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert(result.message);
                 }
-            );
-            
-            if (result.success) {
-                window.SoundConnect.Utils.showNotification('Solicitud aceptada', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                window.SoundConnect.Utils.showNotification(result.message, 'error');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
             }
         }
         
@@ -420,29 +487,38 @@ if (!$isOwnProfile) {
             const friendsList = document.getElementById('friends-list');
             friendsList.innerHTML = 'Cargando...';
             
-            const result = await window.SoundConnect.Utils.fetchAPI(
-                `${window.SoundConnect.API_BASE_URL}/users.php?action=get-friends&user_id=${userId}`
-            );
-            
-            if (result.success && result.data.length > 0) {
-                friendsList.innerHTML = '';
-                result.data.forEach(friend => {
-                    const friendDiv = document.createElement('div');
-                    friendDiv.className = 'friend-item';
-                    friendDiv.innerHTML = `
-                        <div class="friend-avatar">${friend.foto_perfil ? 
-                            `<img src="../../backend/${friend.foto_perfil}">` : 
-                            friend.nombre[0]}</div>
-                        <div class="friend-info">
-                            <div class="friend-name">${friend.nombre}</div>
-                            <div class="friend-status ${friend.estado}">${friend.estado === 'online' ? 'En línea' : 'Desconectado'}</div>
-                        </div>
-                    `;
-                    friendDiv.onclick = () => window.location.href = `perfil.php?user_id=${friend.user_id}`;
-                    friendsList.appendChild(friendDiv);
-                });
-            } else {
-                friendsList.innerHTML = '<p style="text-align: center; color: #999;">No hay amigos aún</p>';
+            try {
+                const response = await fetch(`/red-social/backend/api/users.php?action=get-friends&user_id=${userId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    friendsList.innerHTML = '';
+                    result.data.forEach(friend => {
+                        const friendDiv = document.createElement('div');
+                        friendDiv.className = 'friend-item';
+                        friendDiv.style.cssText = 'padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer;';
+                        friendDiv.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #ff8a00; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    ${friend.foto_perfil ? 
+                                        `<img src="../../backend/${friend.foto_perfil}" style="width:100%; height:100%; object-fit:cover;">` : 
+                                        friend.nombre[0]}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">${friend.nombre}</div>
+                                    <div style="font-size: 0.85rem; color: #999;">@${friend.usuario}</div>
+                                </div>
+                            </div>
+                        `;
+                        friendDiv.onclick = () => window.location.href = `perfil.php?user_id=${friend.user_id}`;
+                        friendsList.appendChild(friendDiv);
+                    });
+                } else {
+                    friendsList.innerHTML = '<p style="text-align: center; color: #999;">No hay amigos aún</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                friendsList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error al cargar amigos</p>';
             }
         }
         

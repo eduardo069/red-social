@@ -2,7 +2,7 @@
 /**
  * API de Usuarios
  * Endpoints: get-profile, update-profile, search, upload-photo, get-friends, send-request, accept-request
- * CORREGIDO - 14/11/2025
+ * CORREGIDO - 16/11/2025
  */
 
 header('Content-Type: application/json');
@@ -266,6 +266,56 @@ try {
             }
             
             $resultado = $friendController->getFriendshipStatus($userId, $_GET['user_id']);
+            echo json_encode($resultado);
+            break;
+        
+        // ============================================
+        // ENDPOINTS DE AVATARES
+        // ============================================
+        
+        case 'get-avatars':
+            // GET: Obtener lista de avatares disponibles
+            if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+                throw new Exception('Método no permitido');
+            }
+            
+            require_once __DIR__ . '/../config/upload.php';
+            $avatars = UploadHelper::getAvailableAvatars();
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $avatars
+            ]);
+            break;
+        
+        case 'update-avatar':
+            // POST: Actualizar avatar (predeterminado o subir foto)
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new Exception('Método no permitido');
+            }
+            
+            require_once __DIR__ . '/../config/upload.php';
+            
+            // Verificar si es avatar predeterminado o upload
+            if (isset($_POST['avatar_name']) && !empty($_POST['avatar_name'])) {
+                // Avatar predeterminado
+                $avatarName = $_POST['avatar_name'];
+                
+                if (!UploadHelper::isValidAvatar($avatarName)) {
+                    throw new Exception('Avatar no válido');
+                }
+                
+                $avatarPath = 'uploads/avatars/' . $avatarName . '.jpg';
+                $resultado = $userController->updateProfilePhoto($userId, $avatarPath);
+                
+            } elseif (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                // Subir foto personalizada
+                $resultado = $userController->uploadProfilePhoto($userId, $_FILES['photo']);
+                
+            } else {
+                throw new Exception('No se recibió avatar ni foto');
+            }
+            
             echo json_encode($resultado);
             break;
         

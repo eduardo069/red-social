@@ -2,6 +2,7 @@
 /**
  * UserController - Maneja operaciones de usuarios
  * Perfiles, búsqueda, actualización
+ * VERSIÓN CORREGIDA CON AVATARES - 16/11/2025
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -263,77 +264,102 @@ class UserController {
     }
     
     /**
-     * Subir foto de perfil
+     * Actualizar foto de perfil (ruta directa - para avatares predeterminados)
+     * @param int $userId
+     * @param string $photoPath - Ruta de la foto
+     * @return array
+     */
+    public function updateProfilePhoto($userId, $photoPath) {
+        if ($this->userModel->updateProfile($userId, ['foto_perfil' => $photoPath])) {
+            return [
+                'success' => true,
+                'message' => 'Foto de perfil actualizada exitosamente',
+                'data' => ['foto_perfil' => $photoPath]
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Error al actualizar la foto de perfil'
+            ];
+        }
+    }
+    
+    /**
+     * Subir foto de perfil personalizada
      * @param int $userId
      * @param array $file - Archivo de $_FILES
      * @return array
      */
     public function uploadProfilePhoto($userId, $file) {
-        // Validar que se subió un archivo
-        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        require_once __DIR__ . '/../config/upload.php';
+        
+        // Validar archivo
+        $validation = UploadHelper::validateImageFile($file, true);
+        
+        if (!$validation['valid']) {
             return [
                 'success' => false,
-                'message' => 'Error al subir el archivo'
+                'message' => implode(', ', $validation['errors'])
             ];
         }
         
-        // Validar tipo de archivo
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $fileType = mime_content_type($file['tmp_name']);
-        
-        if (!in_array($fileType, $allowedTypes)) {
-            return [
-                'success' => false,
-                'message' => 'Tipo de archivo no permitido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP)'
-            ];
-        }
-        
-        // Validar tamaño (máximo 5MB)
-        $maxSize = 5 * 1024 * 1024; // 5MB
-        if ($file['size'] > $maxSize) {
-            return [
-                'success' => false,
-                'message' => 'El archivo es demasiado grande. Tamaño máximo: 5MB'
-            ];
-        }
+        // Obtener usuario actual para eliminar foto antigua
+        $user = $this->userModel->getById($userId);
+        $oldPhoto = $user['foto_perfil'] ?? null;
         
         // Generar nombre único
-        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $fileName = 'profile_' . $userId . '_' . time() . '.' . $extension;
+        $fileName = UploadHelper::generateUniqueFileName($userId, 'profile', $validation['extension']);
+        $destination = UPLOAD_PROFILE_DIR . $fileName;
         
-        // Directorio de destino
-        $uploadDir = __DIR__ . '/../uploads/profiles/';
-        
-        // Crear directorio si no existe
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        $destination = $uploadDir . $fileName;
-        
-        // Mover archivo
-        if (move_uploaded_file($file['tmp_name'], $destination)) {
-            // Actualizar en la base de datos
-            $photoUrl = 'uploads/profiles/' . $fileName;
-            
-            if ($this->userModel->updateProfile($userId, ['foto_perfil' => $photoUrl])) {
-                return [
-                    'success' => true,
-                    'message' => 'Foto de perfil actualizada exitosamente',
-                    'data' => ['foto_perfil' => $photoUrl]
-                ];
-            } else {
-                // Eliminar archivo si falla la actualización en BD
-                unlink($destination);
-                return [
-                    'success' => false,
-                    'message' => 'Error al guardar la foto en la base de datos'
-                ];
-            }
-        } else {
+        // Mover archivo temporal
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
             return [
                 'success' => false,
                 'message' => 'Error al guardar el archivo'
+            ];
+        }
+        
+        // Redimensionar imagen a tamaño de perfil
+        $resized = UploadHelper::resizeImage(
+            $destination,
+            $destination,
+            PROFILE_IMAGE_SIZE,
+            PROFILE_IMAGE_SIZE,
+            true // Hacer cuadrada
+        );
+        
+        if (!$resized) {
+            // Si falla el resize, eliminar archivo y retornar error
+            UploadHelper::deleteFile($destination);
+            return [
+                'success' => false,
+                'message' => 'Error al procesar la imagen'
+            ];
+        }
+        
+        // Actualizar en base de datos
+        $photoUrl = 'uploads/profile/' . $fileName;
+        
+        if ($this->userModel->updateProfile($userId, ['foto_perfil' => $photoUrl])) {
+            // Eliminar foto antigua si no es un avatar predeterminado
+            if ($oldPhoto && 
+                strpos($oldPhoto, 'uploads/profile/') === 0 && 
+                strpos($oldPhoto, 'uploads/avatars/') === false) {
+                $oldPhotoPath = __DIR__ . '/../' . $oldPhoto;
+                UploadHelper::deleteFile($oldPhotoPath);
+            }
+            
+            return [
+                'success' => true,
+                'message' => 'Foto de perfil actualizada exitosamente',
+                'data' => ['foto_perfil' => $photoUrl]
+            ];
+        } else {
+            // Si falla la actualización en BD, eliminar archivo subido
+            UploadHelper::deleteFile($destination);
+            return [
+                'success' => false,
+                'message' => 'Error al guardar la foto en la base de datos'
             ];
         }
     }

@@ -803,3 +803,141 @@
             padding: 15px;
         }
     }
+
+    /* ============================================
+    FIX CRÍTICO: Limitar tamaño de imágenes de perfil
+    Agregar al final de style.css
+    ============================================ */
+
+    /* Contenedores de avatares - TAMAÑOS FIJOS */
+    .post-avatar {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .friend-avatar {
+        width: 45px !important;
+        height: 45px !important;
+        min-width: 45px !important;
+        min-height: 45px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .profile-avatar {
+        width: 150px !important;
+        height: 150px !important;
+        min-width: 150px !important;
+        min-height: 150px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        margin: 0 auto !important;
+        position: relative !important;
+        background: rgba(255,255,255,0.1);
+    }
+
+    .user-avatar,
+    .avatar {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Imágenes dentro de avatares - SIEMPRE AJUSTADAS */
+    .post-avatar img,
+    .friend-avatar img,
+    .profile-avatar img,
+    .user-avatar img,
+    .avatar img,
+    .user-card-avatar img,
+    .friend-card-avatar img {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 100% !important;
+        min-height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        border-radius: 50% !important;
+        display: block !important;
+    }
+
+    /* Avatar en tarjetas de usuario (explorar, amigos) */
+    .user-card-avatar {
+        width: 80px !important;
+        height: 80px !important;
+        min-width: 80px !important;
+        min-height: 80px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        margin: 0 auto 15px !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .friend-card-avatar {
+        width: 80px !important;
+        height: 80px !important;
+        min-width: 80px !important;
+        min-height: 80px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        margin: 0 auto 15px !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Texto cuando no hay imagen (inicial del nombre) */
+    .post-avatar:not(:has(img)),
+    .friend-avatar:not(:has(img)),
+    .profile-avatar:not(:has(img)),
+    .user-avatar:not(:has(img)),
+    .avatar:not(:has(img)) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: bold !important;
+        color: white !important;
+        text-transform: uppercase !important;
+    }
+
+    /* Tamaños de fuente para iniciales */
+    .post-avatar:not(:has(img)),
+    .friend-avatar:not(:has(img)),
+    .user-avatar:not(:has(img)),
+    .avatar:not(:has(img)) {
+        font-size: 1.2rem !important;
+    }
+
+    .profile-avatar:not(:has(img)) {
+        font-size: 3rem !important;
+    }
+
+    .user-card-avatar:not(:has(img)),
+    .friend-card-avatar:not(:has(img)) {
+        font-size: 2rem !important;
+    }
+
+    /* Imágenes en posts (contenido, NO avatares) */
+    .post-image {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 10px !important;
+        margin: 15px 0 !important;
+        display: block !important;
+    }
