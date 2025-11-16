@@ -135,7 +135,6 @@ $currentUserId = $sessionCheck['user']['user_id'];
             padding: 25px;
             text-align: center;
             transition: all 0.3s;
-            cursor: pointer;
         }
         
         .user-card:hover {
@@ -187,10 +186,12 @@ $currentUserId = $sessionCheck['user']['user_id'];
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            margin: 5px;
         }
         
         .user-card-btn:hover {
             background: #e67700;
+            transform: translateY(-2px);
         }
         
         .genre-tags {
@@ -281,8 +282,10 @@ $currentUserId = $sessionCheck['user']['user_id'];
     </footer>
     
     <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/friends.js"></script>
     <script>
         const { Utils, API_BASE_URL } = window.SoundConnect;
+        const currentUserId = <?php echo $currentUserId; ?>;
         let currentFilter = 'all';
         let currentGenre = null;
         
@@ -330,7 +333,6 @@ $currentUserId = $sessionCheck['user']['user_id'];
             if (currentFilter === 'online') {
                 filteredUsers = users.filter(u => u.estado === 'online');
             } else if (currentFilter === 'popular') {
-                // Ordenar por algún criterio de popularidad
                 filteredUsers = users.slice(0, 12);
             }
             
@@ -349,12 +351,22 @@ $currentUserId = $sessionCheck['user']['user_id'];
                 const userCard = createUserCard(user);
                 usersGrid.appendChild(userCard);
             });
+            
+            // Actualizar botones de amistad después de cargar
+            if (window.FriendshipSystem) {
+                setTimeout(() => {
+                    window.FriendshipSystem.updateButtons();
+                }, 500);
+            }
         }
         
         // Crear card de usuario
         function createUserCard(user) {
             const card = document.createElement('div');
             card.className = 'user-card';
+            
+            // No mostrar botón si es el usuario actual
+            const isCurrentUser = user.id === currentUserId;
             
             const avatarContent = user.foto_perfil ? 
                 `<img src="../../backend/${user.foto_perfil}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
@@ -373,9 +385,21 @@ $currentUserId = $sessionCheck['user']['user_id'];
                 ${user.biografia ? `<div class="bio">${Utils.escapeHtml(user.biografia)}</div>` : ''}
                 ${user.genero_musical_favorito ? 
                     `<div style="margin: 10px 0; color: #ff8a00;"><i class="fas fa-music"></i> ${Utils.escapeHtml(user.genero_musical_favorito)}</div>` : ''}
-                <button class="user-card-btn" onclick="viewProfile(${user.id})">
-                    Ver perfil
-                </button>
+                
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="user-card-btn" onclick="viewProfile(${user.id})">
+                        <i class="fas fa-eye"></i> Ver perfil
+                    </button>
+                    ${!isCurrentUser ? `
+                    <button class="user-card-btn friend-action-btn" 
+                            data-friend-action 
+                            data-user-id="${user.id}"
+                            data-current-user="${currentUserId}"
+                            style="background: #667eea;">
+                        <i class="fas fa-user-plus"></i> Agregar
+                    </button>
+                    ` : ''}
+                </div>
             `;
             
             return card;

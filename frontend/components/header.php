@@ -31,6 +31,12 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 <li class="<?php echo $current_page === 'explorar' ? 'active' : ''; ?>">
                     <a href="explorar.php"><i class="fas fa-compass"></i> Explorar</a>
                 </li>
+                <li class="<?php echo $current_page === 'amigos' ? 'active' : ''; ?>" style="position: relative;">
+                    <a href="amigos.php" id="friends-menu-link">
+                        <i class="fas fa-user-friends"></i> Amigos
+                    </a>
+                    <!-- Badge de notificaciones (se actualiza con JavaScript) -->
+                </li>
                 <li class="<?php echo $current_page === 'perfil' ? 'active' : ''; ?>">
                     <a href="perfil.php"><i class="fas fa-user"></i> Mi Perfil</a>
                 </li>
@@ -58,6 +64,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 <span><?php echo htmlspecialchars($_SESSION['nombre']); ?></span>
                 <div class="user-menu">
                     <a href="perfil.php"><i class="fas fa-user"></i> Mi Perfil</a>
+                    <a href="amigos.php"><i class="fas fa-user-friends"></i> Mis Amigos</a>
                     <a href="index.php?logout=true"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                 </div>
             </div>
@@ -104,5 +111,10 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     .user-menu a i {
         margin-right: 10px;
         width: 20px;
+    }
+    
+    /* Estilos para el badge de notificaciones */
+    #friends-menu-link {
+        position: relative;
     }
 </style>

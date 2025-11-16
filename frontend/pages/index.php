@@ -1,7 +1,7 @@
 <?php
 /**
  * Index.php - Página principal de SoundConnect
- * VERSIÓN CORREGIDA - 07/11/2025
+ * VERSIÓN FINAL - 14/11/2025
  */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -23,13 +23,8 @@ $friendController = new FriendController();
 $mensaje_registro = '';
 $error_login = '';
 
-// DEBUG: Log de POST
-error_log("POST Data: " . print_r($_POST, true));
-
 // Procesar formulario de registro
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
-    error_log("=== PROCESANDO REGISTRO ===");
-    
     $data = [
         'usuario' => $_POST['usuario'] ?? '',
         'nombre' => $_POST['nombre'] ?? '',
@@ -37,11 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
         'correo' => $_POST['correo'] ?? ''
     ];
     
-    error_log("Datos registro: " . print_r($data, true));
-    
     $resultado = $authController->register($data);
-    
-    error_log("Resultado registro: " . print_r($resultado, true));
     
     if ($resultado['success']) {
         header("Location: index.php?registro=exitoso");
@@ -53,24 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 
 // Procesar formulario de inicio de sesión
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    error_log("=== PROCESANDO LOGIN ===");
-    
     $usuario = $_POST['usuario'] ?? '';
     $clave = $_POST['clave'] ?? '';
     
-    error_log("Usuario: $usuario");
-    
     $resultado = $authController->login($usuario, $clave);
     
-    error_log("Resultado login: " . print_r($resultado, true));
-    
     if ($resultado['success']) {
-        error_log("Login exitoso, redirigiendo...");
         header("Location: index.php");
         exit();
     } else {
         $error_login = $resultado['message'];
-        error_log("Error login: " . $error_login);
     }
 }
 
@@ -150,7 +133,6 @@ if ($usuario_autenticado) {
                                 <i class="fas fa-lock"></i>
                                 <input type="password" name="clave" placeholder="Contraseña" required>
                             </div>
-                            <!-- IMPORTANTE: Este campo hidden es lo que activa el if isset($_POST['login']) -->
                             <input type="hidden" name="login" value="1">
                             <button type="submit" class="auth-btn">Iniciar Sesión</button>
                             
@@ -181,7 +163,6 @@ if ($usuario_autenticado) {
                                 <i class="fas fa-lock"></i>
                                 <input type="password" name="clave" placeholder="Contraseña" required>
                             </div>
-                            <!-- IMPORTANTE: Este campo hidden es lo que activa el if isset($_POST['registro']) -->
                             <input type="hidden" name="registro" value="1">
                             <button type="submit" class="auth-btn">Registrarse</button>
                             
@@ -196,42 +177,7 @@ if ($usuario_autenticado) {
     </div>
     <?php else: ?>
     <!-- CONTENIDO PRINCIPAL (solo visible cuando está autenticado) -->
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <i class="fas fa-music"></i>
-                <h1>SoundConnect</h1>
-            </div>
-            
-            <div class="mobile-menu">
-                <i class="fas fa-bars"></i>
-            </div>
-            
-            <nav id="main-nav">
-                <ul>
-                    <li><a href="index.php"><i class="fas fa-home"></i> Inicio</a></li>
-                    <li><a href="explorar.php"><i class="fas fa-compass"></i> Explorar</a></li>
-                    <li><a href="#"><i class="fas fa-users"></i> Comunidad</a></li>
-                    <li><a href="#"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
-                    <li><a href="#"><i class="fas fa-envelope"></i> Mensajes</a></li>
-                </ul>
-            </nav>
-            
-            <div class="user-actions">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar música, artistas...">
-                </div>
-                <div class="user-profile">
-                    <div class="avatar"><?php echo substr($sessionCheck['user']['nombre'], 0, 1); ?></div>
-                    <span><?php echo htmlspecialchars($sessionCheck['user']['nombre']); ?></span>
-                    <div class="user-menu">
-                        <a href="index.php?logout=true"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php include __DIR__ . '/../components/header.php'; ?>
     
     <div class="main-content">
         <!-- Feed Central -->
@@ -261,7 +207,7 @@ if ($usuario_autenticado) {
                 <?php foreach ($posts as $post): ?>
                 <div class="post" data-post-id="<?php echo $post['id']; ?>">
                     <div class="post-user">
-                        <div class="post-avatar">
+                        <div class="post-avatar" onclick="window.location.href='perfil.php?user_id=<?php echo $post['usuario_id']; ?>'" style="cursor: pointer;">
                             <?php if (!empty($post['foto_perfil'])): ?>
                                 <img src="../../backend/<?php echo htmlspecialchars($post['foto_perfil']); ?>" alt="Avatar">
                             <?php else: ?>
@@ -269,7 +215,9 @@ if ($usuario_autenticado) {
                             <?php endif; ?>
                         </div>
                         <div class="post-user-info">
-                            <div class="post-username"><?php echo htmlspecialchars($post['usuario']); ?></div>
+                            <div class="post-username" onclick="window.location.href='perfil.php?user_id=<?php echo $post['usuario_id']; ?>'" style="cursor: pointer;">
+                                <?php echo htmlspecialchars($post['usuario']); ?>
+                            </div>
                             <div class="post-time">
                                 <?php 
                                 $fecha = new DateTime($post['fecha_creacion']);
@@ -288,6 +236,16 @@ if ($usuario_autenticado) {
                                 ?>
                             </div>
                         </div>
+                        <?php if ($post['usuario_id'] != $userId): ?>
+                        <div class="post-friend-btn">
+                            <button class="friend-action-btn" 
+                                    data-friend-action 
+                                    data-user-id="<?php echo $post['usuario_id']; ?>"
+                                    data-current-user="<?php echo $userId; ?>">
+                                <i class="fas fa-user-plus"></i> Agregar
+                            </button>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <div class="post-content">
                         <?php echo nl2br(htmlspecialchars($post['contenido'])); ?>
@@ -347,7 +305,7 @@ if ($usuario_autenticado) {
             
             <?php if (!empty($friends)): ?>
                 <?php foreach ($friends as $friend): ?>
-                <div class="friend-item">
+                <div class="friend-item" onclick="window.location.href='perfil.php?user_id=<?php echo $friend['user_id']; ?>'" style="cursor: pointer;">
                     <div class="friend-avatar">
                         <?php if (!empty($friend['foto_perfil'])): ?>
                             <img src="../../backend/<?php echo htmlspecialchars($friend['foto_perfil']); ?>" alt="Avatar">
@@ -390,6 +348,63 @@ if ($usuario_autenticado) {
     <script src="../assets/js/main.js"></script>
     <script src="../assets/js/posts.js"></script>
     <script src="../assets/js/likes.js"></script>
+    <script src="../assets/js/friends.js"></script>
     <script src="../assets/js/auth.js"></script>
+    
+    <style>
+        /* Estilos para botones de amistad en posts */
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .post-friend-btn {
+            margin-left: auto;
+        }
+        
+        .friend-action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #ff8a00;
+            color: white;
+        }
+        
+        .friend-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255,138,0,0.3);
+        }
+        
+        .friend-action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .post-username {
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .post-username:hover {
+            color: #ff8a00;
+        }
+        
+        .post-avatar:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s;
+        }
+        
+        .friend-item:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateX(5px);
+            transition: all 0.3s;
+        }
+    </style>
 </body>
 </html>

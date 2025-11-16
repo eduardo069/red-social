@@ -2,6 +2,7 @@
 /**
  * API de Usuarios
  * Endpoints: get-profile, update-profile, search, upload-photo, get-friends, send-request, accept-request
+ * CORREGIDO - 14/11/2025
  */
 
 header('Content-Type: application/json');
@@ -35,6 +36,9 @@ if (!$authController->isAuthenticated()) {
 
 $userId = $authController->getCurrentUserId();
 $action = isset($_GET['action']) ? $_GET['action'] : '';
+
+// AHORA SÍ puedes hacer el log, después de definir las variables
+error_log("Action: " . $action . " | User: " . $userId);
 
 try {
     switch ($action) {
