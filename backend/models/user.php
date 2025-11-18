@@ -176,20 +176,35 @@ class User {
     
     /**
      * Buscar usuarios
+     * Si searchTerm está vacío, trae todos los usuarios
      */
     public function search($searchTerm, $limit = 20) {
-        $query = "SELECT id, usuario, nombre, foto_perfil, biografia, 
-                         genero_musical_favorito, estado
-                  FROM " . $this->table . "
-                  WHERE usuario LIKE :search 
-                     OR nombre LIKE :search
-                  LIMIT :limit";
-        
-        $stmt = $this->conn->prepare($query);
-        
-        $searchParam = "%{$searchTerm}%";
-        $stmt->bindParam(':search', $searchParam);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        // ✅ Si searchTerm está vacío, traer todos los usuarios
+        if (empty($searchTerm)) {
+            $query = "SELECT id, usuario, nombre, foto_perfil, biografia, 
+                            genero_musical_favorito, estado
+                    FROM " . $this->table . "
+                    ORDER BY fecha_registro DESC
+                    LIMIT :limit";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        } else {
+            // Búsqueda normal con LIKE
+            $query = "SELECT id, usuario, nombre, foto_perfil, biografia, 
+                            genero_musical_favorito, estado
+                    FROM " . $this->table . "
+                    WHERE usuario LIKE :search 
+                        OR nombre LIKE :search
+                    ORDER BY fecha_registro DESC
+                    LIMIT :limit";
+            
+            $stmt = $this->conn->prepare($query);
+            
+            $searchParam = "%{$searchTerm}%";
+            $stmt->bindParam(':search', $searchParam);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        }
         
         $stmt->execute();
         

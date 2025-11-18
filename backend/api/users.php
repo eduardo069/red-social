@@ -90,15 +90,18 @@ try {
                 throw new Exception('Método no permitido');
             }
             
-            if (!isset($_GET['query']) || empty(trim($_GET['query']))) {
-                throw new Exception('Término de búsqueda es requerido');
+            // ✅ PERMITIR query vacío para traer todos los usuarios
+            $query = isset($_GET['query']) ? trim($_GET['query']) : '';
+            $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
+            
+            // Si query está vacío o es muy corto, usar string vacío (el controller lo manejará)
+            if (empty($query)) {
+                $query = ''; // El controller convertirá esto en %
             }
             
-            $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
-            $resultado = $userController->searchUsers($_GET['query'], $limit);
+            $resultado = $userController->searchUsers($query, $limit);
             echo json_encode($resultado);
             break;
-        
         case 'update-status':
             // POST: Actualizar estado (online/offline/ausente)
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

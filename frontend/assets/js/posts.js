@@ -1,7 +1,7 @@
 /**
  * posts.js - Funcionalidad de publicaciones
  * Crear posts, likes, comentarios
- /* 7/11/2025 21:23
+ * ACTUALIZADO CON SOPORTE PARA MÚSICA - 16/11/2025
  */
 
 // Ejecutar cuando el DOM y SoundConnect estén listos
@@ -33,6 +33,18 @@
                 ? `<img src="../../backend/${Utils.escapeHtml(post.foto_perfil)}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
                 : Utils.getInitials(post.nombre);
             
+            // Construir HTML de música si existe
+            let musicHTML = '';
+            if (post.cancion_id || post.cancion_nombre) {
+                musicHTML = `
+                    <div class="post-song">
+                        <i class="fas fa-music"></i>
+                        <span>${Utils.escapeHtml(post.cancion_nombre || 'Sin título')}</span>
+                        ${post.cancion_artista ? ` - <span>${Utils.escapeHtml(post.cancion_artista)}</span>` : ''}
+                    </div>
+                `;
+            }
+            
             postDiv.innerHTML = `
                 <div class="post-user">
                     <div class="post-avatar">${avatarContent}</div>
@@ -43,13 +55,7 @@
                 </div>
                 <div class="post-content">${Utils.escapeHtml(post.contenido).replace(/\n/g, '<br>')}</div>
                 ${post.imagen_url ? `<img src="${Utils.escapeHtml(post.imagen_url)}" alt="Post image" class="post-image">` : ''}
-                ${post.cancion_nombre ? `
-                    <div class="post-song">
-                        <i class="fas fa-music"></i>
-                        <span>${Utils.escapeHtml(post.cancion_nombre)}</span>
-                        ${post.cancion_artista ? ` - <span>${Utils.escapeHtml(post.cancion_artista)}</span>` : ''}
-                    </div>
-                ` : ''}
+                ${musicHTML}
                 <div class="post-stats">
                     <span class="likes-count">${post.total_likes || 0} me gusta</span>
                     <span class="comments-count">${post.total_comentarios || 0} comentarios</span>
@@ -143,7 +149,7 @@
         }
         
         // ============================================
-        // CREAR PUBLICACIÓN
+        // CREAR PUBLICACIÓN (CON MÚSICA)
         // ============================================
         
         async function handleCreatePost() {
@@ -160,9 +166,18 @@
             postBtn.disabled = true;
             postBtn.textContent = 'Publicando...';
             
+            // Preparar datos del post
+            const postData = { contenido };
+            
+            // NUEVO: Verificar si hay música adjunta
+            const songId = window.MusicUploader?.getUploadedSongId();
+            if (songId) {
+                postData.cancion_id = songId;
+            }
+            
             const result = await Utils.fetchAPI(`${API_BASE_URL}/posts.php?action=create`, {
                 method: 'POST',
-                body: JSON.stringify({ contenido })
+                body: JSON.stringify(postData)
             });
             
             postBtn.disabled = false;
@@ -171,6 +186,11 @@
             if (result.success) {
                 Utils.showNotification('Publicación creada exitosamente', 'success');
                 postInput.value = '';
+                
+                // Limpiar música adjunta
+                if (window.MusicUploader?.removeAttachedSong) {
+                    window.MusicUploader.removeAttachedSong();
+                }
                 
                 // Agregar la nueva publicación al feed
                 addPostToFeed(result.data);
@@ -434,6 +454,24 @@
             .comment-submit:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
+            }
+            
+            /* NUEVO: Estilos para música en posts */
+            .post-song {
+                margin: 15px 0;
+                padding: 15px;
+                background: rgba(255, 138, 0, 0.1);
+                border-left: 4px solid #ff8a00;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: white;
+            }
+            
+            .post-song i {
+                color: #ff8a00;
+                font-size: 1.5rem;
             }
             
             @keyframes fadeIn {

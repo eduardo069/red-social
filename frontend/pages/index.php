@@ -255,13 +255,45 @@ if ($usuario_autenticado) {
                     <img src="<?php echo htmlspecialchars($post['imagen_url']); ?>" alt="Post image" class="post-image">
                     <?php endif; ?>
                     
-                    <?php if (!empty($post['cancion_nombre'])): ?>
-                    <div class="post-song">
-                        <i class="fas fa-music"></i>
-                        <span><?php echo htmlspecialchars($post['cancion_nombre']); ?></span>
-                        <?php if (!empty($post['cancion_artista'])): ?>
-                        <span> - <?php echo htmlspecialchars($post['cancion_artista']); ?></span>
-                        <?php endif; ?>
+                    <?php if (!empty($post['cancion_id']) || !empty($post['cancion_nombre'])): ?>
+                    <div class="music-player" 
+                        data-song-id="<?php echo $post['cancion_id'] ?? ''; ?>" 
+                        data-audio-url="<?php echo htmlspecialchars($post['cancion_url'] ?? ''); ?>"
+                        data-song-title="<?php echo htmlspecialchars($post['cancion_nombre'] ?? 'Canción'); ?>">
+                        
+                        <div class="player-cover">
+                            <img src="<?php echo !empty($post['portada_url']) ? '../../backend/' . htmlspecialchars($post['portada_url']) : '../assets/images/default-cover.jpg'; ?>" alt="Portada">
+                            <div class="cover-overlay">
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="player-info">
+                            <div class="song-title"><?php echo htmlspecialchars($post['cancion_nombre'] ?? 'Sin título'); ?></div>
+                            <div class="song-artist"><?php echo htmlspecialchars($post['cancion_artista'] ?? 'Desconocido'); ?></div>
+                            
+                            <div class="player-controls">
+                                <div class="progress-container">
+                                    <span class="current-time">0:00</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                    <span class="total-time">0:00</span>
+                                </div>
+                                
+                                <div class="player-buttons">
+                                    <button class="control-btn volume-btn" title="Volumen">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    <input type="range" class="volume-slider" min="0" max="100" value="70">
+                                    <button class="control-btn download-btn" title="Descargar">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
@@ -350,6 +382,8 @@ if ($usuario_autenticado) {
     <script src="../assets/js/likes.js"></script>
     <script src="../assets/js/friends.js"></script>
     <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/music-uploader.js"></script>
+    <script src="../assets/js/music-player.js"></script>
     
     <style>
         /* Estilos para botones de amistad en posts */

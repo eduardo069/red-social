@@ -3,11 +3,16 @@
  * Configuración global, utilidades y eventos comunes
  */
 
+// ============================================
+// NAMESPACE GLOBAL - SoundConnect
+// ============================================
+window.SoundConnect = window.SoundConnect || {};
+
 // Configuración de la API
-const API_BASE_URL = '../../backend/api';
+window.SoundConnect.API_BASE_URL = '../../backend/api';
 
 // Utilidades generales
-const Utils = {
+window.SoundConnect.Utils = {
     /**
      * Hacer petición fetch con manejo de errores
      */
@@ -200,8 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
  * Buscar usuarios
  */
 async function searchUsers(query) {
-    const result = await Utils.fetchAPI(
-        `${API_BASE_URL}/users.php?action=search&query=${encodeURIComponent(query)}`
+    const result = await window.SoundConnect.Utils.fetchAPI(
+        `${window.SoundConnect.API_BASE_URL}/users.php?action=search&query=${encodeURIComponent(query)}`
     );
     
     if (result.success) {
@@ -255,11 +260,11 @@ function displaySearchResults(users) {
         `;
         userItem.innerHTML = `
             <div class="result-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; font-weight: bold;">
-                ${user.foto_perfil ? `<img src="../../backend/${Utils.escapeHtml(user.foto_perfil)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : Utils.getInitials(user.nombre)}
+                ${user.foto_perfil ? `<img src="../../backend/${window.SoundConnect.Utils.escapeHtml(user.foto_perfil)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : window.SoundConnect.Utils.getInitials(user.nombre)}
             </div>
             <div>
-                <div style="font-weight: 600; color: white;">${Utils.escapeHtml(user.nombre)}</div>
-                <div style="font-size: 0.85rem; color: #999;">@${Utils.escapeHtml(user.usuario)}</div>
+                <div style="font-weight: 600; color: white;">${window.SoundConnect.Utils.escapeHtml(user.nombre)}</div>
+                <div style="font-size: 0.85rem; color: #999;">@${window.SoundConnect.Utils.escapeHtml(user.usuario)}</div>
             </div>
         `;
         
@@ -288,7 +293,9 @@ function displaySearchResults(users) {
  * Verificar si el usuario está autenticado
  */
 async function checkSession() {
-    const result = await Utils.fetchAPI(`${API_BASE_URL}/auth.php?action=check-session`);
+    const result = await window.SoundConnect.Utils.fetchAPI(
+        `${window.SoundConnect.API_BASE_URL}/auth.php?action=check-session`
+    );
     return result.authenticated;
 }
 
@@ -327,8 +334,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Exportar utilidades para otros scripts
-window.SoundConnect = {
-    Utils,
-    API_BASE_URL
-};
+console.log('✅ main.js cargado - SoundConnect inicializado');

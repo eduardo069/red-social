@@ -205,19 +205,23 @@ class UserController {
     
     /**
      * Buscar usuarios
-     * @param string $query - Término de búsqueda
+     * @param string $query - Término de búsqueda (vacío para traer todos)
      * @param int $limit
      * @return array
      */
     public function searchUsers($query, $limit = 20) {
+        // ✅ PERMITIR query vacío para traer todos los usuarios
         if (empty($query)) {
-            return [
-                'success' => false,
-                'message' => 'El término de búsqueda no puede estar vacío'
-            ];
+            $query = ''; // El modelo usará % en el LIKE
         }
         
         $query = htmlspecialchars(strip_tags(trim($query)));
+        
+        // Si sigue vacío después del trim, usar comodín vacío para traer todos
+        if (empty($query)) {
+            $query = '';
+        }
+        
         $users = $this->userModel->search($query, $limit);
         
         // Remover información sensible
